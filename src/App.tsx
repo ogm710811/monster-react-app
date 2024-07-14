@@ -2,21 +2,63 @@ import './App.css';
 // import { Component } from "react";
 import CardList from "./components/card-list/card-list.component";
 import SearchBox from "./components/search-box/search-box.component";
-import {useEffect, useState} from "react";
+import {ChangeEvent, useEffect, useState} from "react";
+import {type} from "node:os";
+import {getData} from "./utils/data.utils";
+
+export type Monster = {
+    id: string;
+    name: string;
+    email: string;
+}
 
 // **** React Functional Component **** //
 const App = () => {
     const [searchField, setSearchField] = useState('');
-    const [monsters, setMonsters] = useState([]);
+    const [monsters, setMonsters] = useState<Monster[]>([]);
     const [filteredMonsters, setFilteredMonsters] = useState(monsters);
 
+    /***
+     useEffect with generic type function
+     ***/
     useEffect(() => {
-        return () => {
-            fetch('https://jsonplaceholder.typicode.com/users')
-                .then((res) => res.json())
-                .then((data) => { setMonsters(data) })
-        };
-    }, []);
+        const fetchMonsters = async () => {
+            const data = await getData<Monster[]>('https://jsonplaceholder.typicode.com/users')
+            setMonsters(data);
+        }
+
+        fetchMonsters()
+    }, [])
+
+
+    /***
+     useEffect variation with .then syntax
+     ***/
+    // useEffect(() => {
+    //     return () => {
+    //         fetch('https://jsonplaceholder.typicode.com/users')
+    //             .then((res) => res.json())
+    //             .then((data) => {
+    //                 console.log(data);
+    //                 setMonsters(data)
+    //             })
+    //     };
+    // }, []);
+
+    /***
+     useEffect variation with async syntax
+     ***/
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         const res = await fetch('https://jsonplaceholder.typicode.com/users');
+    //         if (!res.ok) {
+    //             throw new Error(res.statusText);
+    //         }
+    //         const data = await res.json();
+    //         setMonsters(data)
+    //     }
+    //     fetchData()
+    // }, [])
 
     // if we want to trigger some changes in our app that modify the state
     // adding a second useEffect is teh best practice to avoid the FilteredMonsters array get rebuilt
@@ -29,7 +71,7 @@ const App = () => {
     }, [monsters, searchField]);
 
 
-    const onSearchChange = (e) => {
+    const onSearchChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const searchFieldString = e.target.value.toLowerCase();
         setSearchField(searchFieldString)
     }
